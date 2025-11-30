@@ -78,7 +78,7 @@ public class GameModeController : MonoBehaviour
             // Trigger "Fire" clip
             fire_trigger_clip.time = 0.6f;
             fire_trigger_clip.Play();
-            player.SetMode(PlayerController.PlayerMode.Dual);
+            player.SetMode(PlayerController.PlayerMode.Game); //TODO: change
             current_state = GameState.TexasRedDual;
         }
     }

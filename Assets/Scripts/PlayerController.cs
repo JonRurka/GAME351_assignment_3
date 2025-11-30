@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
 
     public float impulseForce  = 170000.0f;
     public float impulseTorque = 3000.0f;
+    public float vert_rotation_speed = 500;
     public Vector3 gun_ray_offset;
 
 
@@ -24,6 +25,8 @@ public class PlayerController : MonoBehaviour
     Rigidbody rigidBody;
 
     PlayerMode current_mode;
+
+    public float rotY = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -42,34 +45,51 @@ public class PlayerController : MonoBehaviour
         {
             process_look();
             process_movement();
-            //process_shoot();
+            process_shoot();
         }
         else if (current_mode == PlayerMode.Dual)
         {
             process_look();
-            //process_shoot();
+            process_shoot();
         }
         else
         {
-            process_shoot();
+            //process_shoot();
         }
     }
 
     void process_look()
     {
+        Vector3 input = new Vector3(
+            0, 
+            Mathf.Clamp(Input.GetAxis("Mouse X") + Input.GetAxis("Horizontal"), -1, 1), 
+            -Input.GetAxis("Mouse Y")
+        );
+
+        if (input.magnitude > 0.001 && !animController.GetBool("Crouch"))
+        {
+            rigidBody.AddRelativeTorque(new Vector3(0, input.y * impulseTorque * Time.deltaTime, 0));
+            
+
+            rotY += input.z * vert_rotation_speed * Time.deltaTime;
+            rotY = Mathf.Clamp(rotY, -80f, 80f);
+            player_camera.transform.localRotation = Quaternion.Euler(rotY, 0, 0);
+
+            animController.SetBool("Walk", current_mode == PlayerMode.Game);
+        }
 
     }
 
     void process_movement()
     {
         // W/A/S/D input as a combined rotation and movement vector
-        Vector3 input = new Vector3(0, Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        Vector3 input = new Vector3(0, 0, Input.GetAxis("Vertical"));
 
         // allow movement when input detected and not crouching
         if (input.magnitude > 0.001 && !animController.GetBool("Crouch"))
         {
             // rotations are about y axis
-            rigidBody.AddRelativeTorque(new Vector3(0, input.y * impulseTorque * Time.deltaTime, 0));
+            //rigidBody.AddRelativeTorque(new Vector3(0, input.y * impulseTorque * Time.deltaTime, 0));
             // motion is forward/backward (about z axis)
             rigidBody.AddRelativeForce(new Vector3(0, 0, input.z * impulseForce * Time.deltaTime));
 
