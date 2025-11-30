@@ -21,12 +21,16 @@ public class PlayerController : MonoBehaviour
     public Camera player_camera;
     public Texture crosshair;
 
+    public AudioClip gun_shot;
+
     Animator animController;
     Rigidbody rigidBody;
+    AudioSource audio;
 
     PlayerMode current_mode;
 
     public float rotY = 0;
+    private bool cursor_is_locked = true;
 
     // Start is called before the first frame update
     void Start()
@@ -35,7 +39,9 @@ public class PlayerController : MonoBehaviour
         // character and player's corresponding rigid body
         animController = hero.GetComponent<Animator> ();
         rigidBody      = GetComponent<Rigidbody>();
+        audio = GetComponent<AudioSource>();
         current_mode = PlayerMode.Cutscene;
+        LockCursur(false);
     }
 
     // Update is called once per frame
@@ -56,10 +62,22 @@ public class PlayerController : MonoBehaviour
         {
             //process_shoot();
         }
+
+        if (Input.GetKey(KeyCode.Escape) && cursor_is_locked)
+        {
+            LockCursur(false);
+        }
+        if (Input.GetMouseButtonDown(0) && !cursor_is_locked)
+        {
+            LockCursur(true);
+        }
     }
 
     void process_look()
     {
+        if (cursor_is_locked)
+            return;
+
         Vector3 input = new Vector3(
             0, 
             Mathf.Clamp(Input.GetAxis("Mouse X") + Input.GetAxis("Horizontal"), -1, 1), 
@@ -72,7 +90,7 @@ public class PlayerController : MonoBehaviour
             
 
             rotY += input.z * vert_rotation_speed * Time.deltaTime;
-            rotY = Mathf.Clamp(rotY, -80f, 80f);
+            rotY = Mathf.Clamp(rotY, -50f, 50f);
             player_camera.transform.localRotation = Quaternion.Euler(rotY, 0, 0);
 
             animController.SetBool("Walk", current_mode == PlayerMode.Game);
@@ -82,6 +100,9 @@ public class PlayerController : MonoBehaviour
 
     void process_movement()
     {
+        if (cursor_is_locked)
+            return;
+
         // W/A/S/D input as a combined rotation and movement vector
         Vector3 input = new Vector3(0, 0, Input.GetAxis("Vertical"));
 
@@ -110,6 +131,9 @@ public class PlayerController : MonoBehaviour
     public bool did_hit = false;
     void process_shoot()
     {
+        if (cursor_is_locked)
+            return;
+
         did_hit = false;
         Vector3 gun_ray_start = hero.transform.position + gun_ray_offset;
         Vector3 hit_point = gun_ray_start + hero.transform.forward * 20;
@@ -131,6 +155,8 @@ public class PlayerController : MonoBehaviour
         Debug.DrawRay(gun_ray_start, gun_dir * 20, Color.red);
         if (Input.GetKeyDown(KeyCode.F))
         {
+            Debug.Log("Player shot a bullet!");
+            audio.PlayOneShot(gun_shot);
             if (Physics.Raycast(gun_ray, out hit))
             {
                 hit.collider.SendMessage("shot");
@@ -147,8 +173,36 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void Shot()
+    {
+        Debug.Log("Player was shot!");
+        if (current_mode == PlayerMode.Dual)
+        {
+            // Dead
+        }
+        else if (current_mode == PlayerMode.Game)
+        {
+            // Reduce lives, or maybe just dead.
+        }
+    }
+
     public void SetMode(PlayerMode mode)
     {
         current_mode = mode;
+    }
+
+    void LockCursur(bool locked)
+    {
+        if (locked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        cursor_is_locked = locked;
     }
 }

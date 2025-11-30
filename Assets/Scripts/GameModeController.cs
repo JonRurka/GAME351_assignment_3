@@ -15,6 +15,7 @@ public class GameModeController : MonoBehaviour
 
     public GameObject cinema_Cam;
     public PlayerController player;
+    public TX_Red tx_red;
     public float fight_duration = 10;
     public GameState current_state;
 
@@ -28,6 +29,8 @@ public class GameModeController : MonoBehaviour
 
     private float general_timer;
     private float instructions_timer;
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -78,7 +81,8 @@ public class GameModeController : MonoBehaviour
             // Trigger "Fire" clip
             fire_trigger_clip.time = 0.6f;
             fire_trigger_clip.Play();
-            player.SetMode(PlayerController.PlayerMode.Game); //TODO: change
+            player.SetMode(PlayerController.PlayerMode.Dual); //TODO: change
+            tx_red.TriggerStart();
             current_state = GameState.TexasRedDual;
         }
     }
@@ -147,7 +151,9 @@ public class GameModeController : MonoBehaviour
         song_controller.StartSong(SongController.SongType.Flight);
         is_in_fight = true;
     }
-    
 
     
+
+
+
 }
