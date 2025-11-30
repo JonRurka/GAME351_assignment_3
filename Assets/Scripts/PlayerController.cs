@@ -30,7 +30,11 @@ public class PlayerController : MonoBehaviour
     PlayerMode current_mode;
 
     public float rotY = 0;
-    private bool cursor_is_locked = true;
+    public bool cursor_is_locked = true;
+
+    private Vector3 last_pos;
+    private Vector3 cur_pos;
+    private Vector3 velocity;
 
     // Start is called before the first frame update
     void Start()
@@ -39,8 +43,10 @@ public class PlayerController : MonoBehaviour
         // character and player's corresponding rigid body
         animController = hero.GetComponent<Animator> ();
         rigidBody      = GetComponent<Rigidbody>();
-        audio = GetComponent<AudioSource>();
+        audio = hero.GetComponent<AudioSource>();
         current_mode = PlayerMode.Cutscene;
+        last_pos = transform.position;
+
         LockCursur(false);
     }
 
@@ -58,9 +64,9 @@ public class PlayerController : MonoBehaviour
             process_look();
             process_shoot();
         }
-        else
+        else if (current_mode == PlayerMode.Cutscene)
         {
-            //process_shoot();
+            animController.SetBool("Walk", velocity.magnitude > 0.1);
         }
 
         if (Input.GetKey(KeyCode.Escape) && cursor_is_locked)
@@ -71,11 +77,15 @@ public class PlayerController : MonoBehaviour
         {
             LockCursur(true);
         }
+
+        cur_pos = transform.position;
+        velocity = (cur_pos - last_pos) / Time.deltaTime;
+        last_pos = cur_pos;
     }
 
     void process_look()
     {
-        if (cursor_is_locked)
+        if (!cursor_is_locked)
             return;
 
         Vector3 input = new Vector3(
@@ -100,7 +110,7 @@ public class PlayerController : MonoBehaviour
 
     void process_movement()
     {
-        if (cursor_is_locked)
+        if (!cursor_is_locked)
             return;
 
         // W/A/S/D input as a combined rotation and movement vector
@@ -131,7 +141,7 @@ public class PlayerController : MonoBehaviour
     public bool did_hit = false;
     void process_shoot()
     {
-        if (cursor_is_locked)
+        if (!cursor_is_locked)
             return;
 
         did_hit = false;
@@ -159,7 +169,8 @@ public class PlayerController : MonoBehaviour
             audio.PlayOneShot(gun_shot);
             if (Physics.Raycast(gun_ray, out hit))
             {
-                hit.collider.SendMessage("shot");
+                Debug.LogFormat("Player shot: {0}", hit.collider.gameObject.name);
+                hit.collider.gameObject.SendMessageUpwards("shot", SendMessageOptions.DontRequireReceiver);
             }
         }
     }
