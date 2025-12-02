@@ -6,7 +6,7 @@ public class SongController : MonoBehaviour
 {
     public enum SongType
     {
-        Flight,
+        Fight,
         Relax
     }
 
@@ -92,7 +92,7 @@ public class SongController : MonoBehaviour
         AudioClip res = relax_song;
         switch (type)
         {
-            case SongType.Flight:
+            case SongType.Fight:
                 res = fight_song;
                 break;
 

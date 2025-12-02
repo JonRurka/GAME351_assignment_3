@@ -10,8 +10,12 @@ public class GameModeController : MonoBehaviour
         MomentsBeforeFight, // 3 seconds
         TexasRedDual, // approx 2 seconds or less
         FightingBandits, // 10 seconds in any fight state
-        Relaxing // In Relax until shots are fired, then go back to "fight" state.
+        Relaxing, // In Relax until shots are fired, then go back to "fight" state.
+        Dead,
+        Win
     }
+
+    public static GameModeController Instance { get; private set; }
 
     public GameObject cinema_Cam;
     public PlayerController player;
@@ -30,7 +34,18 @@ public class GameModeController : MonoBehaviour
     private float general_timer;
     private float instructions_timer;
 
-    
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogWarning("Attempted to make duplicate GameModeController!");
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -124,6 +139,18 @@ public class GameModeController : MonoBehaviour
 
             GUI.TextField(new Rect(Screen.width / 2 - 250, Screen.height * (1.0f / 3), 500, 100), "Shoot when you hear FIRE!!!", style);
         }
+        else if(current_state == GameState.Dead)
+        {
+            GUIStyle style = new GUIStyle();
+            style.fontSize = 50;
+            style.normal.textColor = Color.red;
+            style.normal.background = null;
+            style.hover.background = null;
+            style.focused.background = null;
+            style.active.background = null;
+
+            GUI.TextField(new Rect(Screen.width / 2 - 50, Screen.height * (1.0f / 3), 100, 100), "WASTED", style);
+        }
     }
 
     public void SwitchToPlayerCam()
@@ -139,20 +166,37 @@ public class GameModeController : MonoBehaviour
         is_in_fight = true;
         fight_counter = fight_duration;
         instructions_timer = 2;
-        song_controller.StartSong(SongController.SongType.Flight);
+        song_controller.StartSong(SongController.SongType.Fight);
     }
 
     public void StartBanditFight()
     {
         if (is_in_fight)
+        {
+            fight_counter = fight_duration;
             return;
+        }
 
         fight_counter = fight_duration;
-        song_controller.StartSong(SongController.SongType.Flight);
+        song_controller.StartSong(SongController.SongType.Fight);
+        current_state = GameState.FightingBandits;
         is_in_fight = true;
     }
 
-    
+    public void BeginBanditFight()
+    {
+        fight_counter = fight_duration;
+        current_state = GameState.FightingBandits;
+        player.current_mode = PlayerController.PlayerMode.Game;
+        is_in_fight = true;
+        Debug.Log("Bandit fight started.");
+    }
+
+    public void PlayerDied()
+    {
+        current_state = GameState.Dead;
+
+    }
 
 
 
