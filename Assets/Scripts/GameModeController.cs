@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 
 public class GameModeController : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class GameModeController : MonoBehaviour
     public static GameModeController Instance { get; private set; }
 
     public GameObject cinema_Cam;
+    public PlayableDirector director;
     public PlayerController player;
     public TX_Red tx_red;
     public float fight_duration = 10;
@@ -33,6 +35,8 @@ public class GameModeController : MonoBehaviour
 
     private float general_timer;
     private float instructions_timer;
+
+    private bool is_playing_supply_track = false;
 
 
     private void Awake()
@@ -83,7 +87,12 @@ public class GameModeController : MonoBehaviour
 
     void update_intro()
     {
-        // transition to before 
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            director.time = 72;
+            SwitchToPlayerCam();
+            StartPlaying();
+        }
     }
 
     void update_before_fight()
@@ -123,6 +132,23 @@ public class GameModeController : MonoBehaviour
     void update_relaxing()
     {
         // If player fires gun in relax state, trigger bandit fight state.
+
+        if (player.is_near_supply)
+        {
+            if (!is_playing_supply_track)
+            {
+                song_controller.SwitchSong(SongController.SongType.Supply_Song);
+                is_playing_supply_track = true;
+            }
+        }
+        else
+        {
+            if (is_playing_supply_track)
+            {
+                song_controller.SwitchSong(SongController.SongType.Relax);
+                is_playing_supply_track = false;
+            }
+        }
     }
 
     private void OnGUI()
@@ -180,6 +206,7 @@ public class GameModeController : MonoBehaviour
         fight_counter = fight_duration;
         song_controller.StartSong(SongController.SongType.Fight);
         current_state = GameState.FightingBandits;
+        is_playing_supply_track = false;
         is_in_fight = true;
     }
 

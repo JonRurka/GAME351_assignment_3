@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     public float vert_rotation_speed = 500;
     public Vector3 gun_ray_offset;
     public float KickForce = 10;
+    public bool is_near_supply = false;
 
 
     public GameObject hero;
@@ -25,6 +26,11 @@ public class PlayerController : MonoBehaviour
 
     public GameObject bullet_prefab;
     public AudioClip gun_shot;
+
+    public AudioSource step_sounds;
+    public AudioClip player_hit;
+
+    //private AudioSource other_sounds;
 
     Animator animController;
     Rigidbody rigidBody;
@@ -39,7 +45,17 @@ public class PlayerController : MonoBehaviour
     private Vector3 cur_pos;
     public Vector3 velocity;
 
+    private float step_sound_delay = 0.4f;
+    private float step_sound_timer = 0;
+
     private float shoot_timer = 0;
+
+
+    private bool start_dead_down_move = false;
+    private float d_move_t = 0;
+    private Vector3 start_pos;
+    private Vector3 end_pos;
+    private float d_move_speed = 1;
 
     private string[] kicks = {
         "front_kick 0",
@@ -67,29 +83,57 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        bool game_lock_logic = false;
+
         if (current_mode == PlayerMode.Game)
         {
             process_look();
             process_movement();
             process_attack();
+            game_lock_logic = true;
         }
         else if (current_mode == PlayerMode.Dual)
         {
             process_look();
             process_attack();
+            game_lock_logic = true;
         }
         else if (current_mode == PlayerMode.Cutscene)
         {
-            
+            game_lock_logic = false;
+        }
+        else if (current_mode == PlayerMode.Dead)
+        {
+            game_lock_logic = false;
+            if (start_dead_down_move)
+            {
+                transform.position = Vector3.Slerp(start_pos, end_pos, d_move_t);
+
+                d_move_t += d_move_speed * Time.deltaTime;
+                if (d_move_t > 1)
+                {
+                    start_dead_down_move = false;
+                }
+            }
         }
 
-        if (Input.GetKey(KeyCode.Escape) && cursor_is_locked)
+        if (game_lock_logic)
         {
-            LockCursur(false);
+            if (Input.GetKey(KeyCode.Escape) && cursor_is_locked)
+            {
+                LockCursur(false);
+            }
+            if (Input.GetMouseButtonDown(0) && !cursor_is_locked)
+            {
+                LockCursur(true);
+            }
         }
-        if (Input.GetMouseButtonDown(0) && !cursor_is_locked)
+        else
         {
-            LockCursur(true);
+            if (Input.GetMouseButtonDown(0) && !cursor_is_locked)
+            {
+                LockCursur(true);
+            }
         }
 
         cur_pos = transform.position;
@@ -144,6 +188,17 @@ public class PlayerController : MonoBehaviour
 
             animController.SetBool("Walk", true);
             animController.speed = 1.0f;
+
+
+            step_sound_timer -= Time.deltaTime;
+            if (step_sound_timer < 0)
+            {
+                //step_sounds.time = 0;
+                //step_sounds.Play();
+                step_sounds.PlayOneShot(step_sounds.clip);
+                step_sound_timer = step_sound_delay;
+                //Debug.Log("play step sound.");
+            }
         }
         else
         {
@@ -234,17 +289,19 @@ public class PlayerController : MonoBehaviour
     public void Shot()
     {
         Debug.Log("Player was shot!");
-        if (current_mode == PlayerMode.Dual)
-        {
-            // Dead
-            current_mode = PlayerMode.Dead;
-            GameModeController.Instance.PlayerDied();
-            animController.SetBool("Dead", true);
-        }
-        else if (current_mode == PlayerMode.Game)
-        {
-            // Reduce lives, or maybe just dead.
-        }
+        audio.PlayOneShot(player_hit);
+        current_mode = PlayerMode.Dead;
+        GameModeController.Instance.PlayerDied();
+        animController.SetBool("Dead", true);
+        GetComponent<Rigidbody>().isKinematic = true;
+        GetComponent<CapsuleCollider>().enabled = false;
+
+        start_dead_down_move = true;
+        start_pos = gameObject.transform.position;
+        end_pos = gameObject.transform.position + new Vector3(0, -0.75f, 0);
+        d_move_t = 0;
+
+        LockCursur(false);
     }
 
     public void SetMode(PlayerMode mode)
@@ -278,5 +335,23 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Resetting kick");
         //animController.SetBool("Kick", false);
         animController.Play("Idle");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "supply_trigger")
+        {
+            is_near_supply = true;
+            Debug.Log("Player near supply");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "supply_trigger")
+        {
+            is_near_supply = false;
+            Debug.Log("Player not near supply");
+        }
     }
 }

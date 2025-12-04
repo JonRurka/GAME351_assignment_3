@@ -74,6 +74,7 @@ public class TX_Red : MonoBehaviour
         Debug.Log("Texas Red has been shot!");
         was_hit = true;
         animController.SetBool("Dead", true);
+        GetComponent<CapsuleCollider>().enabled = false;
         GameModeController.Instance.BeginBanditFight();
     }
 }

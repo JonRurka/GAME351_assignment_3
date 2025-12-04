@@ -7,7 +7,8 @@ public class SongController : MonoBehaviour
     public enum SongType
     {
         Fight,
-        Relax
+        Relax,
+        Supply_Song
     }
 
     public float intro_song_offset = 89;
@@ -20,6 +21,7 @@ public class SongController : MonoBehaviour
     public AudioClip intro_song;
     public AudioClip fight_song;
     public AudioClip relax_song;
+    public AudioClip supply_song;
 
     private AudioClip next_clip;
 
@@ -98,6 +100,10 @@ public class SongController : MonoBehaviour
 
             case SongType.Relax:
                 res = relax_song;
+                break;
+
+            case SongType.Supply_Song:
+                res = supply_song;
                 break;
         }
         return res;

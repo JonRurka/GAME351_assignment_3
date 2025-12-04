@@ -25,7 +25,7 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.LogFormat("Hit: {0}", other.gameObject.name);
+        //Debug.LogFormat("Hit: {0}", other.gameObject.name);
         other.gameObject.SendMessageUpwards("Shot", SendMessageOptions.DontRequireReceiver);
         Destroy(gameObject);
     }
