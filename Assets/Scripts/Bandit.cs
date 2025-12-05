@@ -27,6 +27,7 @@ public class Bandit : MonoBehaviour
         audio = GetComponent<AudioSource>();
         taunt_timer = Random.Range(1.0f, 45.0f);
         shoot_timer = Random.Range(3.0f, 10.0f);
+        GameModeController.Instance.RegisterBandit();
     }
 
     // Update is called once per frame
@@ -90,5 +91,6 @@ public class Bandit : MonoBehaviour
         animController.SetBool("Dead", true);
         GetComponent<CapsuleCollider>().enabled = false;
         is_dead = true;
+        GameModeController.Instance.killedBandit();
     }
 }

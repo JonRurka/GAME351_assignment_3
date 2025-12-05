@@ -5344,7 +5344,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 184345079}
-  m_LocalRotation: {x: -0.10643942, y: 0.16403647, z: 0.017806582, w: 0.98053336}
+  m_LocalRotation: {x: -0.106439434, y: 0.16403648, z: 0.017806584, w: 0.98053336}
   m_LocalPosition: {x: -4.8931246, y: -0.3138232, z: -0.51408124}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -34215,7 +34215,7 @@ MonoBehaviour:
   gun_Shot: {fileID: 8300000, guid: a31f633e313478a49a2a044161aa122b, type: 3}
   bullet_prefab: {fileID: 2274209252760699764, guid: 622202ab47eb00547b70555a6865f796,
     type: 3}
-  shoot_duration: 5
+  shoot_duration: 3
 --- !u!136 &923217831
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -39845,7 +39845,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1056441328}
-  m_LocalRotation: {x: -0.10643942, y: 0.16403647, z: 0.017806582, w: 0.98053336}
+  m_LocalRotation: {x: -0.106439434, y: 0.16403648, z: 0.017806584, w: 0.98053336}
   m_LocalPosition: {x: 3.1990433, y: 3.1365166, z: 3.517653}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

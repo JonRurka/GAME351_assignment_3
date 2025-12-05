@@ -37,7 +37,7 @@ public class GameModeController : MonoBehaviour
     private float instructions_timer;
 
     private bool is_playing_supply_track = false;
-
+    private int num_bandits = 0;
 
     private void Awake()
     {
@@ -177,6 +177,18 @@ public class GameModeController : MonoBehaviour
 
             GUI.TextField(new Rect(Screen.width / 2 - 50, Screen.height * (1.0f / 3), 100, 100), "WASTED", style);
         }
+        else if (current_state == GameState.Win)
+        {
+            GUIStyle style = new GUIStyle();
+            style.fontSize = 50;
+            style.normal.textColor = Color.green;
+            style.normal.background = null;
+            style.hover.background = null;
+            style.focused.background = null;
+            style.active.background = null;
+
+            GUI.TextField(new Rect(Screen.width / 2 - 50, Screen.height * (1.0f / 3), 100, 100), "WINNER!", style);
+        }
     }
 
     public void SwitchToPlayerCam()
@@ -193,6 +205,11 @@ public class GameModeController : MonoBehaviour
         fight_counter = fight_duration;
         instructions_timer = 2;
         song_controller.StartSong(SongController.SongType.Fight);
+    }
+
+    public void RegisterBandit()
+    {
+        num_bandits++;
     }
 
     public void StartBanditFight()
@@ -217,6 +234,16 @@ public class GameModeController : MonoBehaviour
         player.current_mode = PlayerController.PlayerMode.Game;
         is_in_fight = true;
         Debug.Log("Bandit fight started.");
+    }
+
+    public void killedBandit()
+    {
+        num_bandits--;
+
+        if (num_bandits <= 0)
+        {
+            current_state = GameState.Win;
+        }
     }
 
     public void PlayerDied()
